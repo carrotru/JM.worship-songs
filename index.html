@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <title>教會樂團詩歌庫 (v12.0 團體版)</title>
+    <title>教會樂團詩歌庫 (v12.1 修正版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -26,7 +26,7 @@
                ☁️ 樂團詩歌庫
             </h1>
             <div id="status-badge" class="text-xs bg-green-600 px-2 py-1 rounded text-white flex items-center gap-1">
-                <span>●</span> v12.0
+                <span>●</span> v12.1
             </div>
         </div>
     </header>
@@ -163,7 +163,7 @@
 
     <script>
         // ================= CONFIG =================
-        // 請確認這個網址是您最新的
+        // 我已幫您填入最新的 Apps Script 網址
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby1BhI0vnvK9LqIyBlQOINN5bnq98NchrZW7BjJY5e-7XR0zlcUHM1v8S-v28EK3f6o/exec";
 
         let appData = { albums: [], singles: [] };
@@ -207,7 +207,6 @@
             let singlesList = [];
             songs.forEach(song => {
                 const cat = song.category ? song.category.trim() : "單曲";
-                // 確保 group 欄位有值，沒有就顯示 '未知'
                 song.group = song.group ? song.group.trim() : ""; 
 
                 if (cat === "單曲" || cat === "single") {
@@ -217,7 +216,7 @@
                         albumsMap[cat] = { 
                             name: cat, 
                             image: null, 
-                            group: song.group, // 抓第一首歌的團體當作專輯團體
+                            group: song.group, 
                             songs: [] 
                         };
                     }
@@ -311,8 +310,10 @@
             document.getElementById('view-album-detail').classList.remove('hidden');
             
             document.getElementById('detail-title').innerText = targetAlbum.name;
-            // 內頁也顯示團體
             document.getElementById('detail-group').innerText = targetAlbum.group ? `【${targetAlbum.group}】` : '';
+            // 修正：這裡會正確更新歌曲數量了
+            document.getElementById('detail-subtitle').innerText = `${targetAlbum.songs.length} 首歌曲`;
+            
             document.getElementById('detail-image').src = targetAlbum.image;
             document.getElementById('detail-bg-blur').style.backgroundImage = `url('${targetAlbum.image}')`;
             
@@ -385,14 +386,14 @@
             btnLoader.classList.remove('hidden');
             
             const title = document.getElementById('new-title').value;
-            const group = document.getElementById('new-group').value; // 新增：團體
+            const group = document.getElementById('new-group').value; 
             let category = document.getElementById('new-category-select').value;
             if (category === 'new_album') category = document.getElementById('new-album-input').value.trim() || "未命名專輯";
             
             const rawYoutube = document.getElementById('new-youtube').value;
             const imageUrl = document.getElementById('new-image').value.trim();
 
-            const payload = { title, category, youtube_id: rawYoutube, image: imageUrl, group: group }; // 傳送團體
+            const payload = { title, category, youtube_id: rawYoutube, image: imageUrl, group: group }; 
 
             try {
                 await fetch(SCRIPT_URL, {
@@ -426,7 +427,6 @@
             document.getElementById('clearBtn').classList.remove('hidden');
             const list = document.getElementById('search-list');
             
-            // 搜尋邏輯：同時搜尋歌名 OR 團體名稱
             const results = rawSongs.filter(s => 
                 s.title.toLowerCase().includes(query) || 
                 (s.group && s.group.toLowerCase().includes(query))
