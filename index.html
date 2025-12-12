@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>教會樂團詩歌庫 (v11.0 強力修復版)</title>
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <title>教會樂團詩歌庫 (v12.0 團體版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -25,7 +26,7 @@
                ☁️ 樂團詩歌庫
             </h1>
             <div id="status-badge" class="text-xs bg-green-600 px-2 py-1 rounded text-white flex items-center gap-1">
-                <span>●</span> v11.0
+                <span>●</span> v12.0
             </div>
         </div>
     </header>
@@ -39,7 +40,7 @@
 
         <div class="mb-8 sticky top-20 z-30 -mx-2 md:mx-0 fade-in">
             <div class="relative bg-white p-2 rounded-2xl shadow-md ring-1 ring-black/5">
-                <input type="text" id="searchInput" placeholder="搜尋歌曲..." 
+                <input type="text" id="searchInput" placeholder="搜尋歌曲、團體..." 
                        class="w-full p-3 pl-12 rounded-xl bg-slate-100 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none text-lg transition-all"
                        onkeyup="handleSearch()">
                 <div class="absolute left-5 top-5 text-indigo-400">🔍</div>
@@ -86,7 +87,8 @@
                     </div>
                     <div class="z-10">
                         <h2 id="detail-title" class="text-xl font-bold text-shadow">專輯</h2>
-                        <p id="detail-subtitle" class="text-indigo-100 text-sm mt-1">專輯內歌曲</p>
+                        <p id="detail-group" class="text-indigo-200 font-bold mt-1 text-sm">團體</p>
+                        <p id="detail-subtitle" class="text-indigo-100 text-xs mt-1">0 首歌曲</p>
                     </div>
                 </div>
                 <div id="album-song-list" class="divide-y divide-slate-100"></div>
@@ -106,6 +108,10 @@
                 <div>
                     <label class="block text-sm font-bold text-slate-600 mb-1">歌曲名稱 *</label>
                     <input type="text" id="new-title" required class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-1">團體 / 歌手名稱</label>
+                    <input type="text" id="new-group" placeholder="例如：讚美之泉" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none">
                 </div>
                 <div>
                     <label class="block text-sm font-bold text-slate-600 mb-1">歸類至</label>
@@ -152,15 +158,12 @@
                      </a>
                 </div>
             </div>
-            
-            <div class="bg-gray-800 text-gray-500 text-xs p-2 font-mono flex justify-between">
-                <span id="debug-bar">Initializing...</span>
-            </div>
         </div>
     </div>
 
     <script>
         // ================= CONFIG =================
+        // 請確認這個網址是您最新的
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby06S3WdkzNvqAo8bBAZui7Xfz7EPABEAMly1vr-w-1qVkrr8d_gIq0fNrN65eS_qW1/exec";
 
         let appData = { albums: [], singles: [] };
@@ -204,10 +207,20 @@
             let singlesList = [];
             songs.forEach(song => {
                 const cat = song.category ? song.category.trim() : "單曲";
+                // 確保 group 欄位有值，沒有就顯示 '未知'
+                song.group = song.group ? song.group.trim() : ""; 
+
                 if (cat === "單曲" || cat === "single") {
                     singlesList.push(song);
                 } else {
-                    if (!albumsMap[cat]) albumsMap[cat] = { name: cat, image: null, songs: [] };
+                    if (!albumsMap[cat]) {
+                        albumsMap[cat] = { 
+                            name: cat, 
+                            image: null, 
+                            group: song.group, // 抓第一首歌的團體當作專輯團體
+                            songs: [] 
+                        };
+                    }
                     albumsMap[cat].songs.push(song);
                     if (song.image && !albumsMap[cat].image) albumsMap[cat].image = song.image;
                 }
@@ -252,8 +265,13 @@
                         <img src="${album.image}" class="relative w-full h-full object-contain z-10 transition-transform duration-500 group-hover:scale-105" onerror="this.src='https://placehold.co/400x400?text=No+Img'">
                     </div>
                     <div class="p-3">
-                        <h3 class="font-bold text-slate-800 truncate">${album.name}</h3>
-                        <p class="text-xs text-slate-500 mt-1">${album.songs.length} 首</p>
+                        <h3 class="font-bold text-slate-800 truncate text-lg">${album.name}</h3>
+                        <div class="text-sm text-slate-500 mt-1 flex items-center justify-between">
+                            <span class="truncate pr-2 font-medium text-indigo-600">
+                                ${album.group ? '【' + album.group + '】' : ''}
+                            </span>
+                            <span class="flex-shrink-0 bg-slate-100 px-2 rounded-full text-xs">${album.songs.length} 首</span>
+                        </div>
                     </div>
                 </div>
             `).join('');
@@ -271,7 +289,12 @@
                         <div class="relative w-12 h-12 flex-shrink-0 bg-slate-100 rounded overflow-hidden">
                              <img src="${song.image || 'https://placehold.co/100x100/pink/white?text=🎵'}" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/100x100/pink/white?text=🎵'">
                         </div>
-                        <div class="font-bold text-slate-700 text-lg truncate">${song.title}</div>
+                        <div class="font-bold text-slate-700 text-lg truncate">
+                            ${song.title} 
+                            <span class="text-sm text-slate-400 font-normal ml-1">
+                                ${song.group ? ' － ' + song.group : ''}
+                            </span>
+                        </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                         ${song.youtube_id ? '<span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full">YouTube</span>' : ''}
@@ -286,9 +309,13 @@
             if(!targetAlbum) return;
             document.getElementById('view-home').classList.add('hidden');
             document.getElementById('view-album-detail').classList.remove('hidden');
+            
             document.getElementById('detail-title').innerText = targetAlbum.name;
+            // 內頁也顯示團體
+            document.getElementById('detail-group').innerText = targetAlbum.group ? `【${targetAlbum.group}】` : '';
             document.getElementById('detail-image').src = targetAlbum.image;
             document.getElementById('detail-bg-blur').style.backgroundImage = `url('${targetAlbum.image}')`;
+            
             const list = document.getElementById('album-song-list');
             list.innerHTML = targetAlbum.songs.map((song, idx) => `
                 <div class="p-4 flex justify-between items-center hover:bg-slate-50 cursor-pointer" onclick='openPlayer(${JSON.stringify(song).replace(/'/g, "&apos;")})'>
@@ -304,23 +331,14 @@
 
         function openPlayer(song) {
             const iframe = document.getElementById('youtube-iframe');
-            const debugBar = document.getElementById('debug-bar');
             const fallbackLink = document.getElementById('fallback-link');
             const fallbackDiv = document.getElementById('player-fallback');
-            
             document.getElementById('player-modal').classList.remove('hidden');
             document.getElementById('player-title').innerText = song.title;
-            
             const cleanID = extractVideoID(song.youtube_id);
-            
-            debugBar.innerText = `Target: ${cleanID}`;
-
             if (cleanID) {
-                // 變更點：改用 youtube-nocookie.com 嘗試繞過 cookie 限制
                 iframe.src = `https://www.youtube-nocookie.com/embed/${cleanID}?rel=0`; 
                 iframe.classList.remove('hidden');
-                
-                // 設定救援連結
                 fallbackLink.href = `https://www.youtube.com/watch?v=${cleanID}`;
                 fallbackDiv.classList.remove('hidden');
             } else {
@@ -365,12 +383,17 @@
             btn.disabled = true;
             btnText.innerText = "儲存中...";
             btnLoader.classList.remove('hidden');
+            
             const title = document.getElementById('new-title').value;
+            const group = document.getElementById('new-group').value; // 新增：團體
             let category = document.getElementById('new-category-select').value;
             if (category === 'new_album') category = document.getElementById('new-album-input').value.trim() || "未命名專輯";
+            
             const rawYoutube = document.getElementById('new-youtube').value;
             const imageUrl = document.getElementById('new-image').value.trim();
-            const payload = { title, category, youtube_id: rawYoutube, image: imageUrl };
+
+            const payload = { title, category, youtube_id: rawYoutube, image: imageUrl, group: group }; // 傳送團體
+
             try {
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -402,12 +425,24 @@
             document.getElementById('view-search-results').classList.remove('hidden');
             document.getElementById('clearBtn').classList.remove('hidden');
             const list = document.getElementById('search-list');
-            const results = rawSongs.filter(s => s.title.toLowerCase().includes(query));
+            
+            // 搜尋邏輯：同時搜尋歌名 OR 團體名稱
+            const results = rawSongs.filter(s => 
+                s.title.toLowerCase().includes(query) || 
+                (s.group && s.group.toLowerCase().includes(query))
+            );
+            
             list.innerHTML = results.length ? results.map(song => `
                 <div class="p-4 hover:bg-indigo-50 cursor-pointer flex justify-between items-center" onclick='openPlayer(${JSON.stringify(song).replace(/'/g, "&apos;")})'>
                     <div class="flex items-center gap-3">
                          <img src="${song.image || 'https://placehold.co/100?text=🎵'}" class="w-10 h-10 rounded object-cover" onerror="this.src='https://placehold.co/100?text=🎵'">
-                        <div><div class="font-bold text-slate-800">${song.title}</div><div class="text-xs text-slate-500 mt-1">${song.category || '單曲'}</div></div>
+                        <div>
+                            <div class="font-bold text-slate-800">${song.title}</div>
+                            <div class="text-xs text-slate-500 mt-1">
+                                ${song.category || '單曲'} 
+                                ${song.group ? ' · ' + song.group : ''}
+                            </div>
+                        </div>
                     </div>
                     <span class="text-indigo-500 text-sm">Play</span>
                 </div>
