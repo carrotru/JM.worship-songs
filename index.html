@@ -59,7 +59,7 @@
 
             <section id="section-singles">
                 <div class="flex items-center justify-between mb-4 border-l-4 border-pink-500 pl-3">
-                    <h2 class="text-slate-800 font-bold text-xl">單曲 / 新歌</h2>
+                    <h2 class="text-slate-800 font-bold text-xl">單曲</h2>
                     <span class="text-sm text-slate-500" id="single-count">0 首</span>
                </div>
                <div id="single-list" class="grid gap-3"></div>
@@ -123,10 +123,6 @@
                     <input type="text" id="new-album-input" placeholder="新專輯名稱" class="hidden w-full p-2 border border-pink-300 bg-pink-50 rounded-lg outline-none mb-2">
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-slate-600 mb-1">封面圖片連結</label>
-                    <input type="text" id="new-image" placeholder="貼上圖片網址..." class="w-full p-2 border border-gray-300 rounded-lg outline-none text-sm">
-                </div>
-                <div>
                     <label class="block text-sm font-bold text-slate-600 mb-1">YouTube 連結</label>
                     <input type="text" id="new-youtube" placeholder="請直接貼上完整網址" class="w-full p-2 border border-gray-300 rounded-lg outline-none text-sm">
                 </div>
@@ -153,7 +149,6 @@
                 
                 <div id="player-fallback" class="hidden absolute bottom-4 right-4 z-10">
                      <a id="fallback-link" href="#" target="_blank" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full font-bold shadow-lg flex items-center gap-2">
-                        <span>⚠️ 無法播放？點此去 YouTube 看</span>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                      </a>
                 </div>
@@ -266,8 +261,8 @@
                     <div class="p-3">
                         <h3 class="font-bold text-slate-800 truncate text-lg">${album.name}</h3>
                         <div class="text-sm text-slate-500 mt-1 flex items-center justify-between">
-                            <span class="truncate pr-2 font-medium text-indigo-600">
-                                ${album.group ? '【' + album.group + '】' : ''}
+                            <span class="truncate pr-2 font-medium text-gray-500">
+                                ${album.group ? '' + album.group + '' : ''}
                             </span>
                             <span class="flex-shrink-0 bg-slate-100 px-2 rounded-full text-xs">${album.songs.length} 首</span>
                         </div>
@@ -310,7 +305,7 @@
             document.getElementById('view-album-detail').classList.remove('hidden');
             
             document.getElementById('detail-title').innerText = targetAlbum.name;
-            document.getElementById('detail-group').innerText = targetAlbum.group ? `【${targetAlbum.group}】` : '';
+            document.getElementById('detail-group').innerText = targetAlbum.group ? `${targetAlbum.group}` : '';
             // 修正：這裡會正確更新歌曲數量了
             document.getElementById('detail-subtitle').innerText = `${targetAlbum.songs.length} 首歌曲`;
             
